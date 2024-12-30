@@ -1,10 +1,51 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:weather_app/secrets.dart';
 import 'additional_info.dart';
 import 'forecast_card.dart';
+import 'package:http/http.dart' as http;
 
-class WeatherScreen extends StatelessWidget {
+
+class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
+
+  @override
+  State<WeatherScreen> createState() => _WeatherScreenState();
+}
+
+class _WeatherScreenState extends State<WeatherScreen> {
+  Future getCurrentWeather() async { // we won't call this function in build because we want to keep build simple and keep async fun away from build
+    try {
+      String cityName = "Surat" ;
+      final res = await http.get(
+        Uri.parse(
+            'https://api.openweathermap.org/data/2.5/forecast?q=$cityName&APPID=$openWeatherAPIKey'
+        ),
+      );
+      // if(res.statusCode == 200) or
+      final data = jsonDecode(res.body);
+      if(data['cod']!='200') { // or int.parse(data['cod']!=200)
+        throw 'An unexpected error occurred'; //working of throw is similar to return and return from here if throw called and does not execute below code
+      }
+      setState(() { // first it assign temp value is zero run build and display 0 as O/P and temp value from api assign later, now setState again called build that shows updates value, but we can show loading instead of zero at first.
+      temp = data['list'][0]['main']['temp']; // print it to check if it works correctly
+      });
+    } catch (e) {
+      throw e.toString(); //throw error
+    }
+
+    // print(result.body);
+  }
+
+  double temp = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCurrentWeather();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +60,7 @@ class WeatherScreen extends StatelessWidget {
           IconButton(onPressed: () {}, icon: const Icon(Icons.refresh))
         ],
       ),
-      body:  Padding(
+      body: temp==0 ? const CircularProgressIndicator() : Padding(
         padding:  const EdgeInsets.all(16.0),
         child:  Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,18 +77,18 @@ class WeatherScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   child: BackdropFilter( // For merging card with It's background
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), //this effect remove elevation of card, so we have to add Border Radius via ClipRRect
-                    child: const Padding(
-                      padding: EdgeInsets.all(16.0),
+                    child:  Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
                           //Upper Text
-                          Text("300.67˚F", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),),
+                          Text("$temp K", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),),
                           //Cloud Img ?
-                          SizedBox(height: 16,),
-                          Icon(Icons.cloud, size: 64,),
+                          const SizedBox(height: 16,),
+                          const Icon(Icons.cloud, size: 64,),
                           //Bottom Text
-                          SizedBox(height: 16,),
-                          Text("Rain", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300),),
+                          const SizedBox(height: 16,),
+                          const Text("Rain", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300),),
                         ],
                       ),
                     ),
@@ -66,11 +107,11 @@ class WeatherScreen extends StatelessWidget {
                scrollDirection: Axis.horizontal,
                child: Row(
                 children: [
-                  ForecastCard(),
-                  ForecastCard(),
-                  ForecastCard(),
-                  ForecastCard(),
-                  ForecastCard(),
+                  ForecastCard(text1: "00:00", icon: Icons.cloud, text2: "301.11 "),
+                  ForecastCard(text1: "03:00", icon: Icons.sunny, text2: "301.17"),
+                  ForecastCard(text1: "06:00", icon: Icons.sunny, text2: "301.81"),
+                  ForecastCard(text1: "09:00", icon: Icons.cloud, text2: "302"),
+                  ForecastCard(text1: "12:00", icon: Icons.cloud, text2: "304"),
                 ],
                ),
              ),
@@ -81,9 +122,9 @@ class WeatherScreen extends StatelessWidget {
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                AdditionalInfo(),
-                AdditionalInfo(),
-                AdditionalInfo(),
+                AdditionalInfo(icon: Icons.water_drop, text1: "Humidity", text2: "91"),
+                AdditionalInfo(icon: Icons.air, text1: "Wind Speed", text2: "7.5"),
+                AdditionalInfo(icon: Icons.beach_access, text1: "Pressure", text2: "1000"),
               ],
             )
           ],
