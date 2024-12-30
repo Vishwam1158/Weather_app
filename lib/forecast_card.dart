@@ -1,8 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ForecastCard extends StatelessWidget {
-  const ForecastCard({super.key});
+  final String time;
+  final IconData icon;
+  final String temp;
+  const ForecastCard({super.key, required this.time, required this.icon, required this.temp});
 
   @override
   Widget build(BuildContext context) {
@@ -12,13 +14,13 @@ class ForecastCard extends StatelessWidget {
         width: 100,
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-        child: const Column(
+        child:  Column(
           children: [
-            Text("09:00", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-            SizedBox(height: 8,),
-            Icon(Icons.cloud, size: 32,),
-            SizedBox(height: 8,),
-            Text("301.17˚"),
+            Text(time, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+            const SizedBox(height: 8,),
+            Icon(icon, size: 32,),
+            const SizedBox(height: 8,),
+            Text(temp),
           ],
         ),
       ),
